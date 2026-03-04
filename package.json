@@ -1,0 +1,34 @@
+{
+  "name": "product_review",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.8",
+    "@mui/material": "^7.3.8",
+    "@mui/material-nextjs": "^7.3.8",
+    "@mui/x-data-grid": "^8.27.3",
+    "@nivo/bar": "^0.99.0",
+    "@nivo/pie": "^0.99.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-dropzone": "^15.0.0",
+    "react-hook-form": "^7.71.2",
+    "swiper": "^12.1.2"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.22.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "prisma": "^5.22.0"
+  }
+}

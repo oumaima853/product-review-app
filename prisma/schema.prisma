@@ -1,0 +1,20 @@
+
+// 2. This generates the code you'll use in your JS files
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+   provider = "mysql"
+   url      = env("DATABASE_URL")
+  
+}
+
+
+// 3. This is your "Table". It's like a spreadsheet for Users.
+model User {
+  id    Int     @id @default(autoincrement())
+  name  String
+  email String  @unique
+}
