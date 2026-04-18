@@ -1,4 +1,17 @@
+
+
 'use client';
+
+
+import useSWR from "swr";
+import axios from "axios"; 
+import Link from "next/link";
+
+
+import Badge from '@mui/material/Badge';
+
+
+
 
 import MenuIcon from "@mui/icons-material/Menu";
 import Toolbar from "@mui/material/Toolbar";
@@ -39,7 +52,27 @@ const AppBar = styled(MuiAppBar, {
 }));
 
 
+
+const fetcher = (url) => axios.get(url).then((res) => res.data);
+
+
 const TopBar = ({ open, handleDrawerOpen }) => {
+
+ 
+  const { data, error, isLoading } = useSWR("/api/admin/pending-count", fetcher, {
+    refreshInterval: 30000, 
+    revalidateOnFocus: true, 
+  });
+
+
+  const pendingCount = data?.count || 0;
+
+  if (error) console.error("Failed to load notifications");
+
+
+
+
+
   return (
     <AppBar position="fixed" open={open}>
       <Toolbar>
@@ -63,12 +96,27 @@ const TopBar = ({ open, handleDrawerOpen }) => {
        
 
         <Box flexGrow={1} />
-        <Stack direction={"row"}>
-          <ModeToggle />
+        <Stack direction={"row"} gap={20} alignItems={"center"}>
+          
 
-          <IconButton color="inherit">
+         
+<Link href="/admin/users">
+ <Badge
+            badgeContent={ !isLoading && pendingCount > 0 ? pendingCount : ""} 
+            color="error"
+            sx={{marginRight:"12px"}}
+            >
             <NotificationsOutlinedIcon />
-          </IconButton>
+    </Badge>
+
+
+<span>Pending Users</span>
+</Link>
+
+
+<ModeToggle />
+          
+
         </Stack>
       </Toolbar>
     </AppBar>

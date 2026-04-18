@@ -9,18 +9,13 @@ import Typography from "@mui/material/Typography";
 
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
 import Paper from "@mui/material/Paper";
 
 import StarRateIcon from "@mui/icons-material/StarRate";
 
 import gathering from "@/images/gathering.jpg";
 import guessing from "@/images/guessing.jpg";
-import image1 from "@/images/image1.jpg";
-import image2 from "@/images/image2.jpg";
-import image3 from "@/images/image3.jpg";
-import image4 from "@/images/image4.jpg";
-import image5 from "@/images/image5.jpg";
+
 
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -31,10 +26,21 @@ import "./styles.css";
 
 import { Pagination } from "swiper/modules";
 
-import Image from 'next/image'
+import Image from 'next/image';
 
 
-const HeroSection = () => {
+const HeroSection = ({products}) => {
+
+  
+
+
+
+
+  
+
+
+
+
   return (
     
  <Box
@@ -68,10 +74,12 @@ const HeroSection = () => {
         minHeight: { xs: "350px", md: "400px" }, 
         py: 0, 
         my: 0, 
-         border:2,
-            borderColor:"rgba(215, 92, 30, 1)"
+        
       }}
     >
+
+
+
       {/* Part 1: Swiper */}
       <Box
         sx={{
@@ -99,446 +107,125 @@ const HeroSection = () => {
             width: "100%",
           }}
         >
-          <SwiperSlide>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-             
-              <Image
-                src={image1} 
-                alt="Customer using product"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "brightness(0.7)",
-                }}
-                priority
-              />
 
-              {/* Review Overlay */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  p: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  background:
-                    "linear-gradient(to top, rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
-                }}
-              >
-                {/* Review Card */}
-                <Paper
-                  sx={{
-                    p: 3,
-                    bgcolor: "rgba(255, 255, 255, 0.85)",
-                    borderRadius: "12px",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <StarRateIcon
-                        key={i}
-                        sx={{ color: "#FFB800", fontSize: "20px" }}
-                      />
-                    ))}
-                  </Box>
 
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="#212120ff"
-                    sx={{ mb: 1 }}
-                  >
-                    &quot;Life-changing purchase!&quot;
-                  </Typography>
 
-                  <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
-                    This ergonomic chair eliminated my back pain after just 2
-                    days of use. Working from home is now actually comfortable!
-                  </Typography>
+         {products.slice(0, 5).map((product) => ( 
+  <SwiperSlide key={product.id}>
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <img
+        src={product.img || "/placeholder-product.jpg"} 
+        alt={product.name}
+        
+        style={{
+           width: "100%",     
+    height: "100%",     
+          objectFit: "cover",
+          filter: "brightness(0.7)",
+        }}
+        
+      />
 
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar
-                      src={image1.src}
-                      sx={{ width: 40, height: 40 }}
-                    />
-                    <Box>
-                      <Typography fontWeight="bold" color="#2e2e2eff">
-                        Alex Chen
-                      </Typography>
-                      <Typography variant="caption" color="#2e2e2eff">
-                        Software Developer • 450 people found this helpful
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Box>
-            </Box>
-          </SwiperSlide>
-
-          <SwiperSlide>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-            
-              <Image
-                src={image2} 
-                alt="Customer using product"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "brightness(0.7)",
+      {/* Review Overlay */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          p: 4,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          background: "linear-gradient(to top, rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
+        }}
+      >
+        <Paper
+          sx={{
+            p: 3,
+            bgcolor: "rgba(255, 255, 255, 0.85)",
+            borderRadius: "12px",
+            maxWidth: "80%",
+          }}
+        >
+          {/* Product Rating */}
+          <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
+            {[...Array(5)].map((_, i) => (
+              <StarRateIcon
+                key={i}
+                sx={{ 
+                  color: i < Math.floor(product.rate) ? "#FFB800" : "#ccc", 
+                  fontSize: "20px" 
                 }}
               />
+            ))}
+          </Box>
 
-              {/* Review Overlay */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  p: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  background:
-                    "linear-gradient(to top, rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
-                }}
-              >
-                {/* Review Card */}
-                <Paper
-                  sx={{
-                    p: 3,
-                    bgcolor: "rgba(255,255,255,0.95)",
-                    borderRadius: "12px",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <StarRateIcon
-                        key={i}
-                        sx={{ color: "#FFB800", fontSize: "20px" }}
-                      />
-                    ))}
-                  </Box>
+          {/* Dynamic Product Name */}
+          <Typography variant="h6" fontWeight="bold" color="#212120ff" sx={{ mb: 1 }}>
+            {product.name}
+          </Typography>
 
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="#212120ff"
-                    sx={{ mb: 1 }}
-                  >
-                    &quot;Life-changing purchase!&quot;
-                  </Typography>
+          {/* Dynamic Product Description */}
+          <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
+            {product.description.length > 150 
+              ? `${product.description.substring(0, 150)}...` 
+              : product.description}
+          </Typography>
 
-                  <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
-                    This ergonomic chair eliminated my back pain after just 2
-                    days of use. Working from home is now actually comfortable!
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar
-                      src={image2.src} 
-                      sx={{ width: 40, height: 40 }}
-                    />
-                    <Box>
-                      <Typography fontWeight="bold" color="#2e2e2eff">
-                        Alex Chen
-                      </Typography>
-                      <Typography variant="caption" color="#2e2e2eff">
-                        Software Developer • 450 people found this helpful
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Box>
+          {/* Dynamic Creator Info */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Avatar
+              src={product.creator?.img || ""} 
+              sx={{ width: 40, height: 40 }}
+            />
+            <Box>
+              <Typography fontWeight="bold" color="#2e2e2eff" variant="body2">
+                {product.creator?.firstName} {product.creator?.lastName}
+              </Typography>
+              <Typography variant="caption" color="#2e2e2eff">
+                {product.creator?.position || "Verified Buyer"} • Added {new Date(product.createdAt).toLocaleDateString()}
+              </Typography>
             </Box>
-          </SwiperSlide>
+          </Box>
+        </Paper>
+      </Box>
+    </Box>
+  </SwiperSlide>
+))}
 
-          <SwiperSlide>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              
-              <Image
-                src={image3}
-                alt="Customer using product"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "brightness(0.7)",
-                }}
-              />
 
-              {/* Review Overlay */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  p: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  background:
-                    "linear-gradient(to top, rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
-                }}
-              >
-                {/* Review Card */}
-                <Paper
-                  sx={{
-                    p: 3,
-                    bgcolor: "rgba(255,255,255,0.95)",
-                    borderRadius: "12px",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <StarRateIcon
-                        key={i}
-                        sx={{ color: "#FFB800", fontSize: "20px" }}
-                      />
-                    ))}
-                  </Box>
 
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="#212120ff"
-                    sx={{ mb: 1 }}
-                  >
-                    &quot;Life-changing purchase!&quot;
-                  </Typography>
 
-                  <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
-                    This ergonomic chair eliminated my back pain after just 2
-                    days of use. Working from home is now actually comfortable!
-                  </Typography>
 
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar
-                      src={image3.src} 
-                      sx={{ width: 40, height: 40 }}
-                    />
-                    <Box>
-                      <Typography fontWeight="bold" color="#2e2e2eff">
-                        Alex Chen
-                      </Typography>
-                      <Typography variant="caption" color="#2e2e2eff">
-                        Software Developer • 450 people found this helpful
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Box>
-            </Box>
-          </SwiperSlide>
 
-          <SwiperSlide>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <Image
-                src={image4}
-                alt="Customer using product"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "brightness(0.7)",
-                }}
-              />
-
-              {/* Review Overlay */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  p: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  background:
-                    "linear-gradient(to top,rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
-                }}
-              >
-                {/* Review Card */}
-                <Paper
-                  sx={{
-                    p: 3,
-                    bgcolor: "rgba(255,255,255,0.95)",
-                    borderRadius: "12px",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                    {[...Array(5)].map((_, i) => (
-                      <StarRateIcon
-                        key={i}
-                        sx={{ color: "#FFB800", fontSize: "20px" }}
-                      />
-                    ))}
-                  </Box>
-
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="#212120ff"
-                    sx={{ mb: 1 }}
-                  >
-                    &quot;Life-changing purchase!&quot;
-                  </Typography>
-
-                  <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
-                    This ergonomic chair eliminated my back pain after just 2
-                    days of use. Working from home is now actually comfortable!
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar
-                      src={image4.src} 
-                      sx={{ width: 40, height: 40 }}
-                    />
-                    <Box>
-                      <Typography fontWeight="bold" color="#2e2e2eff">
-                        Alex Chen
-                      </Typography>
-                      <Typography variant="caption" color="#2e2e2eff">
-                        Software Developer • 450 people found this helpful
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Box>
-            </Box>
-          </SwiperSlide>
-
-          <SwiperSlide>
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <Image
-                src={image5} 
-                alt="Customer using product"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "brightness(0.7)",
-                }}
-              />
-
-              {/* Review Overlay */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  p: 4,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "flex-end",
-                  background:
-                    "linear-gradient(to top, rgba(75, 74, 74, 0.8) 0%, transparent 50%)",
-                }}
-              >
-                {/* Review Card */}
-                <Paper
-                  sx={{
-                    p: 3,
-                    bgcolor: "rgba(255,255,255,0.95)",
-                    borderRadius: "12px",
-                    maxWidth: "80%",
-                  }}
-                >
-                  <Box sx={{ display: "flex", gap: 0.5, mb: 1 }}>
-                    {[...Array(4)].map((_, i) => (
-                      <StarRateIcon
-                        key={i}
-                        sx={{ color: "#FFB800", fontSize: "20px" }}
-                      />
-                    ))}
-                  </Box>
-
-                  <Typography
-                    variant="h6"
-                    fontWeight="bold"
-                    color="#212120ff"
-                    sx={{ mb: 1 }}
-                  >
-                    &quot;Life-changing purchase!&quot;
-                  </Typography>
-
-                  <Typography variant="body2" color="#2e2e2eff" sx={{ mb: 2 }}>
-                    This ergonomic chair eliminated my back pain after just 2
-                    days of use. Working from home is now actually comfortable!
-                  </Typography>
-
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Avatar
-                      src={image5.src} 
-                      sx={{ width: 40, height: 40 }}
-                    />
-                    <Box>
-                      <Typography fontWeight="bold" color="#2e2e2eff">
-                        Alex Chen
-                      </Typography>
-                      <Typography variant="caption" color="#2e2e2eff">
-                        Software Developer • 450 people found this helpful
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Paper>
-              </Box>
-            </Box>
-          </SwiperSlide>
         </Swiper>
       </Box>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       <Box
         sx={{
@@ -624,21 +311,7 @@ const HeroSection = () => {
             >
               Community Reviews
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                mt: 1, 
-                color: "warning.light",
-                fontWeight: "bold",
-                cursor: "pointer",
-                textDecoration: "underline",
-                "&:hover": {
-                  color: "warning.dark",
-                },
-              }}
-            >
-              Shop Now {">"}
-            </Typography>
+            
           </Stack>
         </Box>
 
@@ -710,21 +383,7 @@ const HeroSection = () => {
             >
               See Actual Customer Joy
             </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                mt: 1,
-                color: "warning.light",
-                fontWeight: "bold",
-                cursor: "pointer",
-                textDecoration: "underline",
-                "&:hover": {
-                  color: "warning.dark",
-                },
-              }}
-            >
-              Shop Now {">"}
-            </Typography>
+            
           </Stack>
         </Box>
       </Box>

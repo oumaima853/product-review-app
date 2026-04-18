@@ -4,6 +4,12 @@ import dynamic from 'next/dynamic';
 import CircularProgress from '@mui/material/CircularProgress';
 import React, { useState, useEffect } from 'react';
 
+import {Stack,Typography} from "@mui/material";
+
+
+import axios from 'axios';
+
+
 
 const Pie = dynamic(
   () => import('@nivo/pie').then((m) => m.Pie),
@@ -17,23 +23,60 @@ const Pie = dynamic(
   }
 );
 
-const data = [
-  { "id": "products", "label": "Products", "value": 469, "color": "hsl(156, 70%, 50%)" },
-  { "id": "users", "label": "Users", "value": 333, "color": "hsl(338, 70%, 50%)" },
-  { "id": "reviews", "label": "Reviews", "value": 321, "color": "hsl(72, 70%, 50%)" },
-];
+
+
 
 const PieChart = () => {
- 
+
+
+   const [chartData, setChartData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
 
    
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
+
+    const fetchPieData = async () => {
+      try {
+        const res = await axios.get('/api/admin/pieChart-stats');
+        setChartData(res.data);
+      } catch (err) {
+        console.error("Failed to load pie data", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPieData();
+
+
+
+
   }, []);
 
-  if (!isClient) return null;
+
+
+  
+
+ if (!isClient || loading ) return (
+     <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh" 
+      sx={{ backgroundColor: 'background.default' }} 
+    >
+      <Stack spacing={2} alignItems="center">
+        <CircularProgress size={50} thickness={4} color="primary" />
+        <Typography variant="body1" color="text.secondary" fontWeight="medium">
+          Loading session...
+        </Typography>
+      </Stack>
+    </Box>
+  );
+
+
 
   const theme = {
      text: {
@@ -53,7 +96,7 @@ const PieChart = () => {
       <Pie
         width={900}  
         height={520} 
-        data={data}
+        data={chartData}
         theme={theme}
         margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
         innerRadius={0.5}

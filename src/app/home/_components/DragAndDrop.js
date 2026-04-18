@@ -8,23 +8,36 @@ import {
   Box,
   Typography,
   Button,
-  ListItem,
   ListItemIcon,
   List,
   Paper,
   Chip
 } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import FilePresentIcon from '@mui/icons-material/FilePresent';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
-const DragAndDrop = () => {
+
+
+
+const DragAndDrop = ({ onFileSelect }) => {
+
     /*state to display file information */
   const [files, setFiles] = useState([]);
 
+
+
+
+
+
   const onDrop = useCallback((acceptedFiles) => {
+
     console.log("Files received successfully:", acceptedFiles);
+
+    const file = acceptedFiles[0];
+    if (file && onFileSelect) {
+    onFileSelect(file); // THIS sends the raw file to the Parent (Dialog)
+  }
     
     // Create preview URLs for files
     const filesWithPreview = acceptedFiles.map((file) => 
@@ -34,7 +47,10 @@ const DragAndDrop = () => {
     );
     
     setFiles(filesWithPreview);
-  }, []);
+  }, [onFileSelect]);
+
+
+
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,
@@ -50,6 +66,7 @@ const DragAndDrop = () => {
   const clearFiles = () => {
     files.forEach(file => URL.revokeObjectURL(file.preview));
     setFiles([]);
+     if (onFileSelect) onFileSelect(null); // Clear the parent state too
   };
 
   // Function to view file
@@ -59,20 +76,14 @@ const DragAndDrop = () => {
       window.open(file.preview, '_blank');
     } 
     
-    /*else {
-      // For non-images, download the file
-      const link = document.createElement('a');
-      link.href = file.preview;
-      link.download = file.name;
-      link.click();
-    }*/
+    
   };
 
 
   const muiTheme = useTheme();
 
   return (
-    <Box sx={{ width: "100%",  mx: 'auto', p: 2 , border:"2px solid red",}}>
+    <Box sx={{ width: "100%",  mx: 'auto', p: 2 }}>
       {/* Dropzone Area */}
       <Paper
         {...getRootProps()}

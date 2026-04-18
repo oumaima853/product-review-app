@@ -10,299 +10,93 @@ import Footer from "@/app/home/_components/HomePageFooter";
 import ScrollToTop from "@/app/home/_components/Scroll"
 
 import HomePageContent from "@/app/home/_components/HomePageContent";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+
+
+import { useSession } from "next-auth/react"; //  handle logged in users 
+import {  CircularProgress, Typography, Stack } from '@mui/material';
+
+
+import axios from "axios";
 
 
 
-const mockProduct = [
-  {
-    id: "1",
-    name: "Book",
-    price: 19.22,
-    category:"Books",
-    description:
-      "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica.Lizards are a widespread group of squamate reptiles, with over 6,000 species, ",
-    image:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=277&fit=crop",
-    averageRating: 4.5,
-    totalReviews: 8,
-    ownerReview: {
-      userName: "Alex Johnson",
-      rating: 5,
-      text: "Amazing book! Couldn't put it down. The characters are well-developed and the plot keeps you engaged.",
-      date: "2 days ago",
-      helpful: 12,
-      verifiedPurchase: true,
-    },
-    reviews: [
-      {
-        id: "r1",
-        
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r2",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r3",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r4",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r5",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r6",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r7",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r8",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r9",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r10",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r11",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r12",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r13",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r14",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r15",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r16",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r17",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r18",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r19",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r20",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r22",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r23",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-      {
-        id: "r24",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r25",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Dress",
-    category:"Clothes",
-    price: 100.78,
-    description:
-      "Lizards are a widespread group of squamate reptiles, with over 6,000 species, ranging across all continents except Antarctica.",
-    image:
-      "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=277&fit=crop",
-    averageRating: 4.5,
-    totalReviews: 8,
-    ownerReview: {
-      userName: "Alex Johnson",
-      rating: 5,
-      text: "Amazing book! Couldn't put it down. The characters are well-developed and the plot keeps you engaged.",
-      date: "2 days ago",
-      helpful: 12,
-      verifiedPurchase: true,
-    },
-    reviews: [
-      {
-        id: "r1",
-        userName: "Sarah Miller",
-        rating: 4,
-        text: "Good book overall, but the ending was a bit predictable.",
-        date: "1 week ago",
-        helpful: 5,
-        verifiedPurchase: true,
-      },
-      {
-        id: "r2",
-        userName: "Mike Chen",
-        rating: 4.5,
-        text: "Enjoyed reading it during my vacation. Well written!",
-        date: "3 days ago",
-        helpful: 3,
-        verifiedPurchase: false,
-      },
-    ],
-  },
-  
-];
+
+
+
 
 
 
 const HomePage = () => {
 
-   // Test states 
-  const [userType, setUserType] = useState('user'); // 'guest', 'user', or 'admin'
+
+  /* ======== My product ========= */
+  const [products, setProducts] = useState([]);
+  const [viewMode, setViewMode] = useState("all"); // "all", "mine", or "favorites"
+
+
+
+  useEffect(() => {
+  const fetchData = async () => {
+    let url = "/api/registred-users/manage-product"; // Default: All
+
+    if (viewMode === "mine") {
+      url = "/api/registred-users/manage-product?filter=mine";
+    } else if (viewMode === "favorites") {
+
+      if (session?.user?.id) {
+        // CASE: Registered User -> Call Database API
+        url = "/api/registred-users/my-favorite";
+      } else {
+        // CASE: Guest User -> Use LocalStorage
+        const saved = localStorage.getItem("guest_favorites");
+        const guestIds = saved ? JSON.parse(saved).map(id => Number(id)) : [];
+        
+        
+        setProducts((prev) => prev.filter(p => guestIds.includes(Number(p.id))));
+        return; 
+      }
+     
+
+
+
+    }
+
+    try {
+      const res = await axios.get(url);
+      setProducts(res.data);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+
+  fetchData();
+}, [viewMode]); // Triggered whenever  tabs are switchs
+
+
+
+
+
+
+
+  // lifting the state up
+  const handleToggle = (value) => {
+    setViewMode(value); 
+  };
+
+
+  
+
+
+
+
+
+
+
+  const { data: session, status } = useSession();
+
+
+  const [userType, setUserType] = useState('guest'); // 'guest', 'user', or 'admin'
   
   // Create user object based on selected type
   const currentUser = 
@@ -327,7 +121,7 @@ const HomePage = () => {
 
       //  FILTER function
       const filteredData = useMemo(() => {
-        let result = [...mockProduct];
+        let result = [...products];
     
         // search filter
         if (searchTerm.trim()) {
@@ -347,15 +141,52 @@ const HomePage = () => {
        
         return result;
       }, [
-        mockProduct,
+        products,
         searchTerm,
         
         categoryFilter,
        
       ]); 
+
+
+
+
+
+
+
+      // 1. Show a loading state while checking the session
+  if (status === "loading") {
+  return (
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh"
+      sx={{ backgroundColor: 'background.default' }} 
+    >
+      <Stack spacing={2} alignItems="center">
+        <CircularProgress size={50} thickness={4} color="primary" />
+        <Typography variant="body1" color="text.secondary" fontWeight="medium">
+          Loading session...
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
   
   return (
-    /* main box */
+   
     <Box
       sx={{
         bgcolor: "background.paper",
@@ -373,14 +204,15 @@ const HomePage = () => {
       >
         {/* HEADER */}
         <HomePageHeader
-         isGuest={isGuest}
-        isRegisteredUser={isRegisteredUser}
-        isAdmin={isAdmin}
+        
         currentUser={currentUser}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         categoryFilter={categoryFilter}
         oncategoryFilterChange={setcategoryFilter}
+        session = {session }
+        status = {status }
+        products = {products}
          />
 
         {/* MAIN PART */}
@@ -390,6 +222,13 @@ const HomePage = () => {
         isAdmin={isAdmin}
         currentUser={currentUser}
         filteredData={filteredData}
+        session = {session }
+        status = {status }
+       
+        onToggle={handleToggle} 
+        products = {products}
+        viewMode={viewMode}
+
         />
 
         {/* FOOTER */}

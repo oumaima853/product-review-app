@@ -8,27 +8,123 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 
 import { DataGrid } from "@mui/x-data-grid";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import DoneOutlinedIcon from "@mui/icons-material/DoneOutlined";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
-import  { useState, useMemo } from "react";
+import  { useState, useMemo, useEffect , useCallback} from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import SimpleUserFilter from "@/app/admin/_components/UserFilter";
+import axios from "axios";
+
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+
+import {  Grid } from "@mui/material";
+
+import { useSnackbar } from "@/providers/snackbarProvider";
 
 
-const columns = [
-  { field: "id", headerName: "ID", width: 90 },
-  {
-    field: "name",
-    headerName: "Full name",
-    width: 120,
-    editable: true,
-    align: "center",
-    headerAlign: "center",
+
+
+
+
+
+
+
+const Users = () => {
+
+
+
+
+
+
+
+
+  const theme = useTheme();
+
+
+
+  const [isClient, setIsClient] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setIsClient(true); }, []);
+
+
+
+  
+  const [pendingUsers, setPendingUsers] = useState([]);
+
+
+ const fetchPendingUsers = useCallback(async()=>{
+       try {
+    const response = await axios.get('/api/admin/pending-users');
+    setPendingUsers(response.data);
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+  }
+
+    } , [] ) ;
+
+
+
+  useEffect( ()=>{
+   
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchPendingUsers ();
+
+  }
+
     
-  },
+    ,[fetchPendingUsers]); 
+
+
+
+    const {showSnackbar} = useSnackbar();
+
+   const handleAction = useCallback( async (id, actionType)=>{
+
+    try{
+
+        console.log("Action ID:", id);
+      if (actionType === 'accept') {
+      await axios.patch('/api/admin/manage-user', { id });
+       showSnackbar("User approved successfully !", "success");
+    } else {
+
+      
+
+
+      await axios.delete('/api/admin/manage-user', { data: { id: id } });
+       showSnackbar("User rejected successfully !", "error");
+    }
+    fetchPendingUsers(); // Refresh the list
+
+
+    } catch(error){
+
+      console.error("Action failed:", error);
+    showSnackbar(error.response?.data?.error || "An error occurred. Please try again.", "error");
+      
+    }
+
+
+
+
+   
+
+    } , [fetchPendingUsers,showSnackbar]); 
+
+
+const columns = useMemo(()=>{
+  return [
+  { field: "id", headerName: "ID", width: 90 },
+  { 
+  field: 'fullName', 
+  headerName: 'Full Name', 
+  width: 300,
+   align: "center",
+    headerAlign: "center",
+  valueGetter: (value, row) => `${row.firstName || ''} ${row.lastName || ''}` 
+},
 
   {
     field: "email",
@@ -40,21 +136,15 @@ const columns = [
     flex: 1,
   },
   {
-    field: "date",
+    field: "createdAt",
     headerName: "Registration date",
     width: 140,
     editable: true,
     align: "center",
     headerAlign: "center",
+    valueFormatter: (value) => new Date(value).toLocaleDateString(),
   },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 120,
-    editable: true,
-    align: "center",
-    headerAlign: "center",
-  },
+ 
   {
     field: "actions",
     headerName: "Actions",
@@ -65,7 +155,7 @@ const columns = [
     filterable: false,
     disableColumnMenu: true,
     renderCell: (params) => {
-      const { status } = params.row;
+      
       return (
         <Box
           sx={{
@@ -76,7 +166,7 @@ const columns = [
             
           }}
         >
-          {status === "inactive" ? (
+         
                    <Box>
 
               <Tooltip title="Accept review">
@@ -85,6 +175,7 @@ const columns = [
                   startIcon={<DoneOutlinedIcon />}
                   color="success"
                   sx={{ mx: 1 }}
+                  onClick={() => handleAction(params.row.id, 'accept')}
                 >
                   Accept
                 </Button>
@@ -95,55 +186,36 @@ const columns = [
                   startIcon={<CloseOutlinedIcon />}
                   color="error"
                   sx={{ mx: 1 }}
+                  onClick={() => handleAction(params.row.id, 'reject')}
                 >
                   Reject
                 </Button>
               </Tooltip>
                     </Box>
 
-          ) : (
-            <Button
-              variant="outlined"
-              startIcon={<CheckCircleOutlineOutlinedIcon />}
-              color="info"
-              sx={{ my: 1 }}
-              
-            >
-              Block
-            </Button>
-          )}
+          
         </Box>
       );
     },
   },
 ];
-const rows = [
-  {
-    id: 1,
-    name: "sara sara",
-    email: "sara.sara@gmail.com",
-    date: "2026-01-04",
-    status: "active",
-  },
-  {
-    id: 2,
-    name: "ahmed sara",
-    email: "admed.sara@gmail.com",
-    date: "2026-01-10",
-    status: "inactive",
-  },
-  
-];
 
-const Users = () => {
-  const theme = useTheme();
+
+},[handleAction]); 
+
+
+
+
+
+
+
+
 
   const [statusReviewFilter, setStatusReviewFilter] = useState("all");
 
-  const [allData] = useState(rows);
 
   const filteredData = useMemo(() => {
-    let result = [...allData]; 
+    let result = [...pendingUsers]; 
     
     
     
@@ -155,7 +227,7 @@ const Users = () => {
 }
 
     return result;
-  }, [allData,statusReviewFilter]);
+  }, [pendingUsers,statusReviewFilter]);
 
   
   const handleClearFilters = () => {
@@ -163,6 +235,11 @@ const Users = () => {
     setStatusReviewFilter("all");
     
   };
+
+
+
+
+  if (!isClient) return null;
 
 
   return (
@@ -173,12 +250,51 @@ const Users = () => {
         minHeight: "100vh",
       }}
     >
+
+    
       
-      <SimpleUserFilter
-       
-        statusReviewFilter={statusReviewFilter}
-        onStatusFilterChange={setStatusReviewFilter}
-      />
+     
+
+       <div>
+      <Box sx={{ flexGrow: 1, my: 2, mx: 3 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <Typography
+              variant="subtitle1"
+              noWrap
+              component=""
+              sx={{ mx: 2, display: { xs: "none", sm: "block" } }}
+            >
+              Pending User Management
+            </Typography>
+            
+            
+            
+            <Box sx={{ flexGrow: 1 }} />
+            
+            
+              <Grid container spacing={2} alignItems="center">
+                
+                
+                
+               
+
+                
+                
+              </Grid>
+            
+          </Toolbar>
+        </AppBar>
+      </Box>
+    </div>
+
+
+
+
+
+
+
+
 
       <Box
         sx={{
@@ -216,12 +332,12 @@ const Users = () => {
           >
             <Typography variant="body1" color="text.secondary">
             
-              {filteredData.length === allData.length
-                ? `All ${allData.length} reviews`
-                : `${filteredData.length} of ${allData.length} reviews`}
+              {filteredData.length === pendingUsers.length
+                ? `All ${pendingUsers.length} reviews`
+                : `${filteredData.length} of ${pendingUsers.length} reviews`}
             </Typography>
 
-            {filteredData.length !== allData.length && (
+            {filteredData.length !== pendingUsers.length && (
               <Button
                 variant="outlined"
                 size="small"
@@ -264,4 +380,8 @@ const Users = () => {
     </Box>
   );
 };
+
+
+
+
 export default Users;

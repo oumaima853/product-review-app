@@ -1,208 +1,168 @@
 'use client';
-
-
-
 import * as React from 'react';
+import { Box, TextField, Button, Snackbar, Alert, Typography, Paper } from "@mui/material";
+import { useForm, Controller } from "react-hook-form";
+import axios from 'axios';
 
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import { useForm } from "react-hook-form";
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
-import Typography from "@mui/material/Typography";
-import Paper from "@mui/material/Paper";
-import { useColorScheme } from '@mui/material';
+import { useSnackbar } from '@/providers/snackbarProvider';
+
+
 
 const ChangePassword = () => {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm();
+  const [open, setOpen] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState("");
 
-  const newPassword = watch("newPassword");
-
-  // Validation rules
-  const validationRules = {
-    email: {
-      required: "Email is required",
-      pattern: {
-        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Invalid email address"
-      }
-    },
-    currentPassword: {
-      required: "Current password is required",
-      minLength: {
-        value: 6,
-        message: "Password must be at least 6 characters"
-      }
-    },
-    newPassword: {
-      required: "New password is required",
-      minLength: {
-        value: 6,
-        message: "Password must be at least 6 characters"
-      }
-    },
-    confirmPassword: {
-      required: "Please confirm your password",
-      validate: value => 
-        value === newPassword || "Passwords do not match"
+  const { control, handleSubmit, watch, formState: { errors, isSubmitting }, reset } = useForm({
+    defaultValues: {
+      
+      currentPassword: '',
+      password: '', // new Password
+      confirmPassword: ''
     }
-  };
+  });
 
-    
-
- const [open, setOpen] = React.useState(false);
-
-  const handleClick = () => {
-    setOpen(true);
-  };
+  const passwordValue = watch("password");
 
   const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+    if (reason === 'clickaway') return;
     setOpen(false);
   };
 
 
-
-
-
+  const {showSnackbar} = useSnackbar();
 
   const onSubmit = async (data) => {
     try {
-      console.log("Changing password:", data);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      handleClick();
+      setErrorMsg("");
+      
+      const response = await axios.post('/api/admin/change-password', {
+        
+        currentPassword: data.currentPassword,
+        newPassword: data.password
+      });
+
+      showSnackbar(" password changed successfuly","success");
+      reset(); // clear form after success
+
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to change password");
+      showSnackbar(error.response?.data?.message || "Failed to change password","success");
+      
     }
   };
 
 
-  const { mode } = useColorScheme();
+
+
+
+
+
+
+
 
 
 
   return (
-
-
-    <Box sx={{ maxWidth: 900, mx: "auto", mt: 4 }}>
-
-    {/* Header Section */}
-      <Paper 
-        elevation={0} 
-        sx={{ 
-          p: 3, 
-          mb: 3, 
-         
-          
-          borderRadius: 2
-        }}
-      >
-        <Typography textAlign={'center'} variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        <Typography textAlign='center' variant="h4" gutterBottom sx={{ fontWeight: 600 }}>
            Change Password
         </Typography>
-        <Typography textAlign={'center'} variant="body1" sx={{ opacity: 0.9 }}>
-          Update your account password to keep your account secure
-        </Typography>
+        
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 2 }}>
+           
+
+
+             <Controller
+              name="currentPassword"
+              control={control}
+              rules={{ 
+                required: 'Current password is required',
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Current Password"
+                  type="password"
+                  margin="normal"
+                  error={!!errors.currentPassword}
+                  helperText={errors.currentPassword?.message}
+                />
+              )}
+            />
+
+
+
+
+
+
+
+            <Controller
+              name="password"
+              control={control}
+              rules={{ 
+                required: 'New Password is required',
+                minLength: { value: 6, message: 'Password must be at least 6 characters' }
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="New Password"
+                  type="password"
+                  margin="normal"
+                  error={!!errors.password}
+                  helperText={errors.password?.message}
+                />
+              )}
+            />
+
+             <Controller
+              name="confirmPassword"
+              control={control}
+              rules={{ 
+                required: 'Confirm Password is required',
+                validate: value => value === passwordValue || "Passwords do not match"
+              }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Confirm New Password"
+                  type="password"
+                  margin="normal"
+                  error={!!errors.confirmPassword}
+                  helperText={errors.confirmPassword?.message}
+                />
+              )}
+            />
+
+            {errorMsg && (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {errorMsg}
+              </Typography>
+            )}
+
+            <Box sx={{ textAlign: "right", mt: 3 }}>
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isSubmitting}
+                sx={{ px: 4, py: 1 }}
+              >
+                {isSubmitting ? "Processing..." : "Update Password"}
+              </Button>
+            </Box>
+        </Box>
       </Paper>
-    <Box
-      onSubmit={handleSubmit(onSubmit)}
-      component="form"
-      sx={{ 
-        display: "flex", 
-        flexDirection: "column", 
-        gap: 3,
-       
-        mx: "auto",
-        p: 3,
-      }}
-      noValidate
-    >
-      <TextField
-        label="Email"
-        type="email"
-        variant="filled"
-        fullWidth
-        {...register("email", validationRules.email)}
-        error={Boolean(errors.email)}
-        helperText={errors.email?.message}
-      />
 
-      <TextField
-        label="Current Password"
-        type="password"
-        variant="filled"
-        fullWidth
-        {...register("currentPassword", validationRules.currentPassword)}
-        error={Boolean(errors.currentPassword)}
-        helperText={errors.currentPassword?.message}
-      />
-
-      <TextField
-        label="New Password"
-        type="password"
-        variant="filled"
-        fullWidth
-        {...register("newPassword", validationRules.newPassword)}
-        error={Boolean(errors.newPassword)}
-        helperText={errors.newPassword?.message}
-      />
-
-      <TextField
-        label="Confirm New Password"
-        type="password"
-        variant="filled"
-        fullWidth
-        {...register("confirmPassword", validationRules.confirmPassword)}
-        error={Boolean(errors.confirmPassword)}
-        helperText={errors.confirmPassword?.message}
-      />
-
-      <Box sx={{ textAlign: "right", mt: 2 }}>
-        <Button
-          type="submit"
-          variant="contained"
-          disabled={isSubmitting}
-          sx={{ 
-            textTransform: "capitalize",
-            px: 4,
-            py: 1,
-            minWidth: 150
-          }}
-        >
-          {isSubmitting ? "Processing..." : "Change Password"}
-        </Button>
-      </Box>
-
-       {/* Snackbar  */}
-    <Snackbar anchorOrigin={{ vertical:"top", horizontal:"right" }} open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert
-          onClose={handleClose}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          Password changed successfully!
+      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          Password updated successfully!
         </Alert>
       </Snackbar>
     </Box>
-
-   </Box>
-
-
-
-
-
   );
 };
 

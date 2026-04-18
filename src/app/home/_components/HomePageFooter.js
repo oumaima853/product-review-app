@@ -8,8 +8,7 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import InfoIcon from '@mui/icons-material/Info';
-import SecurityIcon from '@mui/icons-material/Security';
-import HelpIcon from '@mui/icons-material/Help';
+
 
 const Footer = () => {
   return (

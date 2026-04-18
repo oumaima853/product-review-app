@@ -7,7 +7,6 @@ import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
-import TextField from "@mui/material/TextField";
 
 import { useState , useEffect} from "react";
 import ToggleButton from "@mui/material/ToggleButton";
@@ -23,16 +22,11 @@ import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 
 import Rating from "@mui/material/Rating";
 
-import image1 from "@/images/image1.jpg";
 
-import { Chip, Modal, Avatar, Divider, Paper } from "@mui/material";
-import PersonIcon from "@mui/icons-material/Person";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+
 import Badge from "@mui/material/Badge";
 
 import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 
 import Pagination from "@mui/material/Pagination";
 import ExpandableDescription from "@/app/home/_components/ExpandableDescription ";
@@ -43,23 +37,47 @@ import InventoryIcon from "@mui/icons-material/Inventory";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
-import HistoryIcon from "@mui/icons-material/History";
-import { styled } from "@mui/material/styles";
 
 import AddProductDialog from "@/app/home/_components/AddProductDialog";
 import ReviewModal from "@/app/home/_components/ReviewModal";
-import MyReviewDialog from "@/app/home/_components/MyReviewDialog"
+import MyReviewDialog from "@/app/home/_components/MyReviewDialog";
+
+import {Paper} from "@mui/material";
+
+import axios from "axios";
+
+
+
+
+
+
+function averageRating(product) {
+  if (!product.reviews || product.reviews.length === 0) return 0;
+
+  const sum = product.reviews.reduce((acc, review) => acc + review.rating, 0);
+  const average = sum / product.reviews.length; 
+
+ 
+  return average;
+}
+
+
+
 
 
 
 const HomePageContent = ({
-  isGuest,
-  isRegisteredUser,
-  isAdmin,
-  currentUser,
-  filteredData
+ 
+  filteredData,
+  session,
+  status,
+  onToggle,
+  products,
+  viewMode
 }) => {
-  /*toggle button state */
+
+
+ 
   const [alignment, setAlignment] = useState("left");
 
   const handleAlignment = (event, newAlignment) => {
@@ -70,7 +88,7 @@ const HomePageContent = ({
   const [openReviews, setOpenReviews] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null); 
 
-  const product = filteredData; 
+  const product = filteredData || []; //[] to prevent the app from crashing if data is still loading 
 
   const handleOpenReviews = (product) => {
     
@@ -80,7 +98,7 @@ const HomePageContent = ({
   };
 
   const handleCloseReviews = () => {
-    setSelectedProduct(null); // Clear product selection when closing, to accept new one when user click on another product revie button
+    setSelectedProduct(null); // Clear product selection when closing, to accept new one
     setOpenReviews(false);
   };
 
@@ -107,19 +125,12 @@ const [openProductDialog, setOpenProductDialog] = useState(false);
     setOpenProductDialog(false);
   };
 
-/*myReview state */
-
-const [openReviewDialog, setOpenReviewDialog]= useState(false);
-
-const handleClickReviewDialog=()=>{
-    setOpenReviewDialog(true);
-}
-const handleCloseReviewDialog=()=>{
-    setOpenReviewDialog(false);
-}
 
 
 
+
+
+  /* ======= favorite   ======== */
 
 const [favorite, setFavorite]= useState([]);
 
@@ -131,25 +142,133 @@ useEffect(() => {
   }
 }, []);
 
-function toggleFavorite(ProductId) {
-  setFavorite((prev) => {
-    if (prev.includes(ProductId)) {
-      return prev.filter((id) => id !== ProductId);
-    } else {
-      return [...prev, ProductId];
+async function toggleFavorite(ProductId) {
+
+   // CASE 1: registred user
+  if (session?.user?.id) {
+    try {
+      const response = await axios.post('/api/registred-users/favorites', { productId :ProductId });
+      
+      if (response.data.action === 'added') {
+        setFavorite((prev) => [...prev, Number(ProductId)]);
+      } else {
+        setFavorite((prev) => prev.filter((id) => id !== Number(ProductId)));
+      }
+    } catch (error) {
+      console.error("Failed to update database favorite", error);
     }
+    return;
+  }
+
+
+
+
+
+ // CASE 2: GUEST (LocalStorage)
+  setFavorite((prev) => {
+    const isFavorited = prev.includes(ProductId);
+    const updated = isFavorited 
+      ? prev.filter((id) => id !== ProductId) 
+      : [...prev, ProductId];
+    
+    localStorage.setItem("guest_favorites", JSON.stringify(updated));
+    return updated;
   });
+
+
+
 }
 
 
+
+
 useEffect(() => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("guest_favorites", JSON.stringify(favorite));
+  const handleAuthChange = async () => {
+    if (session?.user?.id) {
+      // check  sync data
+      const guestFavs = localStorage.getItem("guest_favorites");
+      if (guestFavs) {
+        const productIds = JSON.parse(guestFavs);
+        if (productIds.length > 0) {
+          await axios.post('/api/user/favorites/sync', { productIds });
+          localStorage.removeItem("guest_favorites");
+        }
+      }
+
+      const response = await axios.get('/api/registred-users/favorites');
+      
+      const dbIds = response.data.map((fav) => Number(fav.productId));
+      setFavorite(dbIds); 
+    } else {
+      // Guest Logic
+      const saved = localStorage.getItem("guest_favorites");
+       if (saved) {
+        
+        const parsed = JSON.parse(saved).map(id => Number(id));
+        setFavorite(parsed);
+      }
+    }
+  };
+
+  handleAuthChange();
+}, [session]); // Triggered whenever user logs in or out
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ====== For my reviews  ====== */
+
+const [userReviews, setUserReviews] = useState([]);
+const [totalCount, setTotalCount] = useState(0);
+
+/*myReview state */
+
+const [openReviewDialog, setOpenReviewDialog]= useState(false);
+
+const handleClickReviewDialog= async ()=>{
+    setOpenReviewDialog(true);
+     try {
+    const response = await axios.get('/api/registred-users/reviews');
+    setUserReviews(response.data.reviews);
+    setTotalCount(response.data.totalCount);
+  } catch (error) {
+    console.error("Failed to fetch reviews", error);
   }
-}, [favorite]);
+
+
+
+
+
+}
+
+
+const handleCloseReviewDialog=()=>{
+    setOpenReviewDialog(false);
+}
+
+
+
+
+
+
+
+
+
+
 
   return (
-    <Box sx={{ border: 1, borderColor: "rgba(215, 187, 30, 1)", m: 3 }}>
+    <Box sx={{  m: 3 }}>
       <Container>
         {/*part 1 */}
         <Stack
@@ -160,13 +279,13 @@ useEffect(() => {
           gap={1}
         >
           <Box>
-            <Typography variant="h6">Selected Products</Typography>
-            <Typography variant="body1" fontWeight={300}>
-              all our new arrivals in an exclusive brand selection
+            <Typography variant="h6">   Product Discovery  </Typography>
+            <Typography variant="body1" fontWeight={200} >
+              Your gateway to finding and sharing the market’s best.
             </Typography>
           </Box>
 
-          {isGuest && (
+          { status ==="unauthenticated"  && (
             <ToggleButtonGroup
               value={alignment}
               exclusive
@@ -184,7 +303,7 @@ useEffect(() => {
                   py: 1,
                   mt: 2,
                   color: "text.main",
-                  // Button formatting when selected (required)
+                  
                   "&.Mui-selected": {
                     border: "1px solid rgba(13, 108, 240, 0.68) !important",
                     color: "#407bb9ff",
@@ -196,15 +315,22 @@ useEffect(() => {
                 },
               }}
             >
-              <ToggleButton value="all">
+              <ToggleButton 
+              onClick={() => onToggle("all")}
+              value="all"
+              >
                 <AllInboxIcon sx={{ mr: 1, fontSize: "20px" }} /> All Products
               </ToggleButton>
 
-              <ToggleButton value="my-products">
-                <HistoryIcon sx={{ mr: 1, fontSize: "20px" }} /> Recent Products
-              </ToggleButton>
 
-              <ToggleButton value="my-favorites">
+              
+
+              <ToggleButton 
+              value="my-favorites"
+              onClick={() => onToggle("favorites")}
+
+              
+              >
                 <FavoriteOutlinedIcon sx={{ mr: 1, fontSize: "20px" }} /> My Favorites
                  <Badge
                     badgeContent={favorite.length}
@@ -228,7 +354,7 @@ useEffect(() => {
             </ToggleButtonGroup>
           )}
 
-          {isRegisteredUser && (
+          {status ==="authenticated"  && (
             <div className="action-menu">
               <ToggleButtonGroup
                 value={alignment}
@@ -263,11 +389,17 @@ useEffect(() => {
                   <AddIcon sx={{ mr: 1, fontSize: "20px" }} /> Add Product
                 </ToggleButton>
 
-                <ToggleButton value="all">
+                <ToggleButton 
+                value="all"
+                onClick={() => onToggle("all")}
+                >
                   <AllInboxIcon sx={{ mr: 1, fontSize: "20px" }} /> All Products
                 </ToggleButton>
 
-                <ToggleButton value="my-products">
+                <ToggleButton 
+                value="my-products"
+                onClick={() => onToggle("mine")}
+                >
                   <InventoryIcon sx={{ mr: 1, fontSize: "20px" }} /> My Products
                 </ToggleButton>
 
@@ -275,10 +407,14 @@ useEffect(() => {
                   <RateReviewIcon sx={{ mr: 1, fontSize: "20px" }}  /> My Reviews
                 </ToggleButton>
 
-                <ToggleButton value="favorites">
+                <ToggleButton
+                 value="favorites"
+                 onClick={() => onToggle("favorites")}
+
+                 >
                   My Favorites
                   <Badge
-                    badgeContent={6}
+                    badgeContent={favorite.length}
                     color="error"
                     sx={{ ml: 2 }}
                     fontSize="large"
@@ -298,6 +434,65 @@ useEffect(() => {
           )}
         </Stack>
 
+
+
+
+
+
+
+
+{/* Empty State case */}
+{products.length === 0 && (
+  <Paper
+    elevation={0}
+    sx={{
+      p: 6,
+      textAlign: 'center',
+      bgcolor: 'background.paper',
+      border: '2px dashed',
+      borderColor: 'divider',
+      borderRadius: 4,
+      my: 4
+    }}
+  >
+    
+
+    <Typography variant="h6" fontWeight="bold" color="error.main" gutterBottom>
+      {viewMode === "favorites" ? "No favorites yet" : "No products found"}
+    </Typography>
+
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+      {viewMode === "favorites" 
+        ? "Products you heart will appear here so you can find them later."
+        : viewMode === "mine"
+        ? "You haven't uploaded any products yet. Start sharing your experiences!"
+        : "We couldn't find any products matching your current filters."
+      }
+    </Typography>
+
+   
+  </Paper>
+)}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         {/*part 2 Product Cards*/}
         <Stack
           direction={"row"}
@@ -305,12 +500,14 @@ useEffect(() => {
           justifyContent={"space-between"}
         >
           {selectedCards.map((item) => (
-            <Card
-              key={item.id} 
+            <div key={item.id} id={`product-${item.id}`}>
+
+              <Card
+              
               sx={{
                 maxWidth: 333,
                 mt: 6,
-                /*this is the class of image (see inspect , how to know it ??) */
+                
                 ":hover .MuiCardMedia-root": {
                   scale: "1.1",
                   transition: "0.35s",
@@ -322,7 +519,7 @@ useEffect(() => {
                 component="img"
                 alt="green iguana"
                 height="277"
-                image={image1.src}
+                image={item.img}
               />
               <CardContent>
                 <Stack
@@ -362,7 +559,7 @@ useEffect(() => {
                     • owner reviewed
                   </Typography>
 
-                  {/*to be clickable icon */}
+                  
                   <IconButton
                   onClick={()=>{toggleFavorite(item.id)}}
                   >
@@ -381,6 +578,7 @@ useEffect(() => {
                     
                   </IconButton>
 
+
                 </Stack>
               </CardContent>
 
@@ -395,19 +593,27 @@ useEffect(() => {
                   <RateReviewOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
                   Reviews
                   <Badge
-                    badgeContent={item.totalReviews}
+                    badgeContent={ item.reviews?.length || 0}
+                     
                     color="warning"
                     sx={{ ml: 2 }}
                   ></Badge>
                 </Button>
+
                 <Rating
                   name={`rating-${item.id}`}
-                  value={item.averageRating} 
+                  value={averageRating(item)} 
                   precision={0.5}
                   readOnly
                 />
+
+
               </CardActions>
             </Card>
+
+            </div>
+
+            
           ))}
         </Stack>
 
@@ -428,7 +634,9 @@ useEffect(() => {
         openReviews={openReviews}
         handleCloseReviews={handleCloseReviews}
         selectedProduct={selectedProduct}
-        isRegisteredUser={isRegisteredUser}
+        session={session}
+        status= {status}
+        averageRating = {averageRating}
         />
 
 
@@ -443,6 +651,10 @@ onclose={handleCloseProductDialog}
 <MyReviewDialog
 open={openReviewDialog}
 onclose={handleCloseReviewDialog}
+userReviews={userReviews}
+setUserReviews={setUserReviews}
+totalCount={totalCount}
+
 
 />
 

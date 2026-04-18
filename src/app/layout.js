@@ -5,6 +5,9 @@ import "./globals.css";
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import ThemeRegistry from '@/Components/ThemeRegistry';
 
+import SnackbarProvider from "../providers/snackbarProvider";
+
+import AuthProvider from "@/providers/authProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,10 +32,21 @@ export default function RootLayout({ children }) {
          
         <InitColorSchemeScript attribute="class" />
 
-        
-        <ThemeRegistry>
+<ThemeRegistry>
+  <AuthProvider>
+   <SnackbarProvider>
+            
           {children}
-        </ThemeRegistry>
+        
+        </SnackbarProvider>
+
+        </AuthProvider>
+        
+</ThemeRegistry>
+       
+
+        
+      
 
 
 

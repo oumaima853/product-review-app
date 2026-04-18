@@ -12,9 +12,102 @@ datasource db {
 }
 
 
-// 3. This is your "Table". It's like a spreadsheet for Users.
-model User {
-  id    Int     @id @default(autoincrement())
-  name  String
-  email String  @unique
+enum Role {
+  USER
+  ADMIN
 }
+
+enum ReviewStatus {
+  approved
+  flagged
+}
+
+
+model User {
+  id            Int       @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String    @unique
+  password      String    // Ensure you hash this before saving!
+  img           String?   // User profile image URL
+  position      String?   // Job/Work position
+  age           Int?
+  isApproved  Boolean  @default(false)
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+
+  // Relations
+  products      Product[] // Products created by this user
+  reviews       Review[]  // Reviews written by this user
+  favorites     Favorite[] // Helper table for "isFavorite"
+
+}
+
+
+model Product {
+  id                Int       @id @default(autoincrement())
+  name              String
+  description       String
+  price             Float
+  img               String?    @db.Text
+  rate              Float     @default(0) // Average rating
+  isVerified        Boolean   @default(false)
+  verifiedProofImg  String?    @db.Text
+  createdAt         DateTime  @default(now())
+
+  // Relations
+  userId            Int
+  creator           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  reviews           Review[]
+  favoritedBy       Favorite[]
+
+  categoryId       Int
+  category         Category  @relation(fields: [categoryId], references: [id])
+
+}
+
+
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+
+
+
+
+model Review {
+  id          Int       @id @default(autoincrement())
+  description String
+  rating      Int      // e.g., 1-5 stars
+  status    ReviewStatus @default(approved)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+
+// Separate table for Favorites (Best practice for many-to-many)
+model Favorite {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  productId Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId]) // A user can only favorite a product once
+}
+
+
+
+
+
+

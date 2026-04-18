@@ -3,51 +3,83 @@
 import * as React from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemButton from "@mui/material/ListItemButton";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
+
 import Typography from "@mui/material/Typography";
-import CloseIcon from "@mui/icons-material/Close";
 import Slide from "@mui/material/Slide";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
+
 import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 
 import Box from "@mui/material/Box";
 import { useForm } from "react-hook-form";
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
+
 import Paper from "@mui/material/Paper";
-import { useColorScheme } from "@mui/material";
 import Stack from "@mui/material/Stack";
 
 import { useState } from "react";
-import { Avatar } from "@mui/material";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
-import { useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
+import {  useEffect  } from "react";
 
-import { ListItem, ListItemIcon } from "@mui/material";
-import FilePresentIcon from "@mui/icons-material/FilePresent";
 
 import DragAndDrop from "@/app/home/_components/DragAndDrop";
 
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
-import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 
 import { FormControlLabel, Checkbox } from "@mui/material";
 import VerifiedIcon from "@mui/icons-material/Verified";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
+import { useSnackbar } from "@/providers/snackbarProvider";
+
+
+
+
+
+import {
+  
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+
+import axios from "axios";
+
+
+
+
+
+/* cloudinary   */
+const uploadToCloudinary = async (file) => {
+  if (!file) return null;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "product_reviews"); 
+
+  const response = await axios.post(
+    `https://api.cloudinary.com/v1_1/duoilxylp/image/upload`, 
+    formData
+  );
+  return response.data.secure_url; //  permanent HTTPS link
+};
+
+
+
+
+
+
+
+
+
+
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -72,12 +104,17 @@ function getLabelText(value) {
 }
 
 const AddProductDialog = ({ open, onclose }) => {
+ 
+ 
+ 
   const {
     register,
     handleSubmit,
 
     formState: { errors, isSubmitting },
   } = useForm();
+
+
 
   // Validation rules
   const validationRules = {
@@ -96,49 +133,94 @@ const AddProductDialog = ({ open, onclose }) => {
       required: "Description is required",
 
       maxLength: {
-        value: 20,
+        value: 200,
         message: "Description must be at most 200 words",
       },
     },
-    email: {
-      required: "Email is required",
-      pattern: {
-        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        message: "Invalid email address",
-      },
-    },
-    currentPassword: {
-      required: "Current password is required",
-      minLength: {
-        value: 6,
-        message: "Password must be at least 6 characters",
-      },
-    },
-    newPassword: {
-      required: "New password is required",
-      minLength: {
-        value: 6,
-        message: "Password must be at least 6 characters",
-      },
-    },
-    confirmPassword: {
-      required: "Please confirm your password",
-      /* validate: value => 
-        value === newPassword || "Passwords do not match"*/
-    },
+    
+   
   };
 
-  const onSubmit = async (data) => {
-    try {
-      console.log("Changing password:", data);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // handleClick();
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Failed to change password");
+
+
+
+
+
+
+
+  const {showSnackbar} = useSnackbar();
+
+
+const onSubmit = async (data) => {
+  try {
+    console.log("Starting upload...");
+
+  
+
+  // 1. Upload images 
+    const [productUrl, proofUrl] = await Promise.all([
+     
+     
+     // First is the product image
+      rawProductFile ? uploadToCloudinary(rawProductFile) : null,
+      
+      // Second is the proof image
+      (isVerified && rawProofFile) ? uploadToCloudinary(rawProofFile) : null
+
+
+    ]);
+
+
+     // 2. Build the final object
+    const finalData = {
+      ...data,
+      img: productUrl,
+      verifiedProofImg: proofUrl,
+      rate: value,
+      //isVerified: isVerified,
+      categoryId: categoryFilter, 
+      
+    };
+
+
+
+
+
+   
+
+    // 3. Send to Database API
+    const response = await axios.post('/api/registred-users/add-product', finalData);
+
+     if (response.status === 201) {
+      showSnackbar("Product added successfully!", "success");
+      onclose(); // Close Dialog
+     
     }
-  };
+
+   
+
+  } catch (error) {
+    console.error("Submission Error:", error);
+    showSnackbar(error.response?.data?.error || "Failed to add product", "error");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   /*for rating */
   const [value, setValue] = useState(2);
@@ -147,23 +229,68 @@ const AddProductDialog = ({ open, onclose }) => {
   /*for checkbox */
   const [isVerified, setIsVerified] = useState(false);
 
-  /*proof of purchase */
+ 
 
-  const [file, setFile] = useState(null);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      // Creates a temporary local URL for the image
-      setFile(URL.createObjectURL(selectedFile));
-    }
-  };
+
+// proof image state
+const [proofPreview, setProofPreview] = useState(null); // For the <img> tag
+const [rawProofFile, setRawProofFile] = useState(null); // For Cloudinary
+
+//vactual product image state
+const [rawProductFile, setRawProductFile] = useState(null); 
+
+const handleFileChange = (event) => {
+  const selectedFile = event.target.files[0]; 
+  if (selectedFile) {
+    // 1. Create a local URL for the UI preview
+    setProofPreview(URL.createObjectURL(selectedFile)); 
+    
+    // 2. Save the actual  file for the upload later
+    setRawProofFile(selectedFile); 
+  }
+};
+
+
+
 
   const handleClear = () => {
-    setFile(null);
+    setProofPreview(null);
   };
 
+
+
+
+
+  /* ===== For category =====   */
+
+    const [categoryFilter, setcategoryFilter] = useState("all");
+
+    const handleCategoryChange = (event) => {
+    setcategoryFilter(event.target.value);
+  };
+
+
+  const [availableCategories, setAvailableCategories] = useState([]);
+
+  useEffect(() => {
+  const categories = async () => {
+    try {
+      const response = await axios.get('/api/admin/categories');
+      setAvailableCategories(response.data);
+    } catch (err) {
+      console.error("Categories fetch failed", err);
+    }
+  };
+  categories();
+}, []);
+
+
+
+
   return (
+
+
     <Dialog
       fullScreen
       open={open}
@@ -197,7 +324,7 @@ const AddProductDialog = ({ open, onclose }) => {
 
             mx: "auto",
             p: 3,
-            border: "2px solid red",
+            
             width: "80%",
           }}
           noValidate
@@ -235,6 +362,31 @@ const AddProductDialog = ({ open, onclose }) => {
               required
             />
           </Stack>
+
+           {/* category Filter */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Category</InputLabel>
+                      <Select
+                        label="Category"
+                        value={categoryFilter}
+                        onChange={handleCategoryChange}
+                      >
+                        <MenuItem value="all">Any category</MenuItem>
+                        
+                        {availableCategories.map((category) => {
+            return (
+              <MenuItem key={category.id} value={category.id}>
+                {category.name}
+              </MenuItem>
+            );
+          })}
+            
+          
+                        
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
           {/*description */}
           <TextField
@@ -275,7 +427,7 @@ const AddProductDialog = ({ open, onclose }) => {
           </Box>
 
           {/*images */}
-          <DragAndDrop />
+          <DragAndDrop   onFileSelect={(file) => setRawProductFile(file)}  />
 
           <Stack
             spacing={2}
@@ -328,10 +480,10 @@ const AddProductDialog = ({ open, onclose }) => {
                   />
                 </Button>
 
-                {file && (
+                {proofPreview  && (
                   <Stack alignItems="center" spacing={1}>
                     <img
-                      src={file}
+                      src={proofPreview } // MUST be the string URL from URL.createObjectURL
                       alt="Receipt preview"
                       style={{ width: "40%", borderRadius: "8px" }}
                     />
@@ -346,6 +498,7 @@ const AddProductDialog = ({ open, onclose }) => {
                     </Stack>
                     <Button
                       variant="outlined"
+
                       size="small"
                       color="error"
                       onClick={handleClear}

@@ -7,49 +7,38 @@ import * as React from "react";
 import HeroSection from "@/app/home/_components/HeroSection";
 
 import Box from "@mui/material/Box";
-import ModeToggle from "@/Components/ModeToggle";
 import { Stack, Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
-import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
-import FavoriteIcon from "@mui/icons-material/Favorite";
+
+
 import QuestionAnswerTwoToneIcon from "@mui/icons-material/QuestionAnswerTwoTone";
 import Container from "@mui/material/Container";
 import SearchIcon from "@mui/icons-material/Search";
 import { styled, alpha } from "@mui/material/styles";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
-import IconButton from "@mui/material/IconButton";
-import ListItemButton from "@mui/material/ListItemButton";
-import { useState } from "react";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+
+
 import { useColorScheme } from "@mui/material/styles";
 
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+
 import Avatar from '@mui/material/Avatar';
 
-import {
- 
-  Paper,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
- 
-  
-} from "@mui/material";
+import HomePageHeaederPart1 from "./HomePageHeaederPart1";
 
-const languages = ["EN", "DE"];
-const categories = ["All categories", "Clothes", "Electronics", "Books"];
+import { useRouter } from 'next/navigation';
+
+// handle logout 
+import { signOut } from "next-auth/react";
+
+
+
+
+
+
 
 const Search = styled("div")(({ theme }) => ({
   flexGrow: 0.4,
@@ -91,215 +80,77 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-const StyledBadge = styled(Badge)(({ theme }) => ({
-  "& .MuiBadge-badge": {
-    right: -3,
-    top: 13,
-    border: `2px solid ${(theme.vars ?? theme).palette.background.paper}`,
-    padding: "0 4px",
-  },
-}));
+
+
+
+
+
+
 
 const HomePageHeader = ({
-  isGuest,
-  isRegisteredUser,
-  isAdmin,
-  currentUser,
+  
   searchTerm, 
   onSearchChange,
-   categoryFilter,
-  oncategoryFilterChange,
+   products,
+  session,
+  status,
 }) => {
+
+
+
+
+ 
+
+  const router = useRouter();
   
-  const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
-  const [selectedlanguageIndex, setSelectedlanguageIndex] = useState(0);
-  const languageOpen =
-    Boolean(
-      languageAnchorEl
-    ); /*to handle open and close state, or simply it can use anchorEl directly instead of creating open variable*/
-  const handleLanguageClickListItem = (event) => {
-    setLanguageAnchorEl(event.currentTarget);
-  };
+ 
+ 
 
-  const handleLanguageMenuItemClick = (event, index) => {
-    setSelectedlanguageIndex(index);
-    setLanguageAnchorEl(null);
-  };
 
-  const handleLanguageClose = () => {
-    setLanguageAnchorEl(null);
-  };
-
-  /* states for category selector !  */
-  const [categoryAnchorEl, setCategoryAnchorEl] = useState(null);
-  const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(0);
-  const categoryOpen =
-    Boolean(
-      categoryAnchorEl
-    ); 
-  const handleCategoryClickListItem = (event) => {
-    setCategoryAnchorEl(event.currentTarget);
-  };
-
-  const handleCategoryMenuItemClick = (event, index) => {
-    setSelectedCategoryIndex(index);
-    setCategoryAnchorEl(null);
-  };
-
-  const handleCategoryClose = () => {
-    setCategoryAnchorEl(null);
-  };
-  
+ 
 
   const { mode } = useColorScheme(); 
 
-  // Manually check mode and set color
-  const myColor = mode === "dark" ? "#4b4d51ff" : "#dde0e3ff";
-  console.log(myColor);
+ 
 
 
-   const handleCategoryChange = (event) => {
-    oncategoryFilterChange(event.target.value);
+
+ const handleLogout = async () => {
+    //  Trigger SignOut
+    await signOut({ 
+      callbackUrl: "/home", // Redirect to home after logout
+      redirect: true 
+    });
+
+    showSnackbar("You have been logged out", "info");
   };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
-    <Box sx={{ border: 1, borderColor: "blue" }}>
+    <Box >
       
-      <Box
-        sx={{
-          bgcolor: "background.paper",
-          py: 1,
-          px: 10,
+      {/* part 1 */}
 
-          borderBottomLeftRadius: 4,
-          borderBottomRightRadius: 4,
-          borderBottom: 1,
-          borderColor: "divider",
-          boxShadow: "0px 2px 8px #686363ff",
+      <HomePageHeaederPart1/>
+     
 
-          border: 1,
-          borderColor: "blue",
-        }}
-      >
-        <Container
-          maxWidth={false} 
-          disableGutters 
-          sx={{
-            "&.MuiContainer-root": { px: 6 } ,
-            border: 1,
-            borderColor: "red",
-          }}
-        >
-          <Stack direction={"row"} alignItems={"center"} spacing={1}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
-                flexShrink: 0,
-              }}
-            >
-              <Typography
-                sx={{
-                  px: 1.5,
-                  py: 0.5,
-                  bgcolor: "primary.main",
-                  color: "rgba(226, 228, 228, 1)",
-                  borderRadius: "12px",
-                  fontSize: "16px",
-                  fontWeight: 700,
-                  letterSpacing: "0.5px",
-                }}
-                variant="body2"
-              >
-                ProductReview Hub
-              </Typography>
-
-              <Typography
-                sx={{
-                  fontSize: "14px",
-                  fontWeight: 400,
-                  color: "text.secondary",
-                  display: { xs: "none", sm: "block" },
-                }}
-                variant="body2"
-              >
-                Discover the Best, Together.
-              </Typography>
-            </Box>
-
-          
-            <Box flexGrow={1}></Box>
-
-            {/*language selector */}
-
-            <List
-              component="nav"
-              aria-label="Device settings"
-             
-
-              sx={{
-                bgcolor: "background.paper",
-                ".MuiTypography-root": { fontSize: "14px", fontWeight: 500 },
-                p: 0,
-                m: 0,
-              }}
-            >
-              <ListItem
-                id="language-button"
-                aria-haspopup="listbox"
-                aria-controls="language-menu"
-                aria-label="when device is locked"
-                onClick={handleLanguageClickListItem}
-                sx={{
-                  "&:hover": {
-                    cursor: "pointer",
-                    bgcolor: "action.hover",
-                    borderRadius: 1,
-                  },
-                  px: 1.5,
-                  py: 0.5,
-                  minHeight: "auto",
-                }}
-              >
-                <ListItemText secondary={languages[selectedlanguageIndex]} />
-                {/*<ExpandMoreOutlinedIcon sx={{ fontSize: "14px" }} />*/}
-                {languageOpen ? (
-                  <ExpandLess sx={{ fontSize: "14px" }} />
-                ) : (
-                  <ExpandMore sx={{ fontSize: "14px" }} />
-                )}
-              </ListItem>
-            </List>
-            <Menu
-              id="language-menu"
-              anchorEl={languageAnchorEl}
-              open={languageOpen}
-              onClose={handleLanguageClose}
-              slotProps={{
-                list: {
-                  "aria-labelledby": "language-button",
-                  role: "listbox",
-                },
-              }}
-            >
-              {languages.map((option, index) => (
-                <MenuItem
-                  sx={{ fontSize: "14px", p: "3px 10px", minHeight: "10px" }}
-                  key={option}
-                  selected={index === selectedlanguageIndex}
-                  onClick={(event) => handleLanguageMenuItemClick(event, index)}
-                >
-                  {option}
-                </MenuItem>
-              ))}
-            </Menu>
-
-            <ModeToggle />
-          </Stack>
-        </Container>
-      </Box>
-
+      {/* part 2 */}
       <Box
         sx={{
           my: 1,
@@ -312,8 +163,7 @@ const HomePageHeader = ({
           borderTop: 1,
           borderColor: "divider",
           borderRadius: 2,
-          border: 1,
-          borderColor: "blue",
+         
         }}
       >
         <Container
@@ -323,8 +173,7 @@ const HomePageHeader = ({
             display: "flex",
             justifyContent: "space-between",
             "&.MuiContainer-root": { px: 6 },
-            border: 1,
-            borderColor: "red",
+            
           }}
         >
           <Stack alignItems={"center"}>
@@ -359,28 +208,16 @@ const HomePageHeader = ({
             />
 
             <div >
-              {/* category Filter */}
-        <Grid item xs={12} sm={6} md={3} >
-          <FormControl fullWidth size="small" >
-            <InputLabel>Category</InputLabel>
-            <Select
-              label="Category"
-              value={categoryFilter}
-              onChange={handleCategoryChange}
-              style={{ borderRadius:"15px"}}
-            >
-              <MenuItem value="all">Any category</MenuItem>
-              <MenuItem value="Electronics">Electronics</MenuItem>
-              <MenuItem value="Clothes">Clothes</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
+            
+
+
+
             </div>
           </Search>
 
           <Stack direction={"row"} textAlign={"center"}>
             
-            {isGuest && (
+            {status ==="unauthenticated" && (
               <>
                 <Button
                   variant="contained"
@@ -392,6 +229,10 @@ const HomePageHeader = ({
                     fontSize: "14px",
                   }}
                   startIcon={<LoginOutlinedIcon />}
+
+                   onClick={() => {
+                router.push("/home/login");
+              }}
                 >
                   Login
                 </Button>
@@ -404,13 +245,17 @@ const HomePageHeader = ({
                     fontSize: "14px",
                     backgroundColor: "primary.main",
                   }}
+
+                  onClick={() => {
+                router.push("/home/register");
+              }}
                 >
                   Register
                 </Button>
               </>
             )}
 
-            {isRegisteredUser && (
+            {status ==="authenticated" && (
              <>
     <Box 
     sx={{ 
@@ -423,9 +268,9 @@ const HomePageHeader = ({
       "&:hover": { bgcolor: "rgba(0, 0, 0, 0.04)" } 
     }}>
       <Avatar 
-        alt={currentUser.name} 
-        src="/static/images/avatar/1.jpg" 
-        sx={{ width: 32, height: 32, border: "1px solid #ddd" }} 
+        alt={`${session?.user.firstName}  `} 
+        src={`${session?.user.img}  `}
+        sx={{ width: 45, height: 45, border: "1px solid #ddd" }} 
       />
       <Typography 
         variant="body2" 
@@ -435,11 +280,11 @@ const HomePageHeader = ({
           letterSpacing: "0.5px"
         }}
       >
-        {currentUser.name}
+        
+        {`${session?.user.firstName}  ${session?.user.lastName}`}
       </Typography>
-    </Box>
 
-    <Button
+       <Button
       variant="outlined" 
       color="info" 
       sx={{
@@ -456,9 +301,15 @@ const HomePageHeader = ({
         }
       }}
       startIcon={<LogoutOutlinedIcon sx={{ fontSize: 18 }} />}
+      onClick= {handleLogout}
     >
       Logout
     </Button>
+
+
+    </Box>
+
+   
   </>
             )}
           </Stack>
@@ -466,8 +317,11 @@ const HomePageHeader = ({
       </Box>
 
       {/*hero section */}
-      {isGuest && (
-      <HeroSection />
+      { status ==="unauthenticated" && (
+      <HeroSection
+      
+      products={products}
+       />
       )}
     </Box>
   );

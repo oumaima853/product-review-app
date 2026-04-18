@@ -7,79 +7,226 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 
 import { DataGrid } from "@mui/x-data-grid";
-import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import DoneOutlinedIcon from "@mui/icons-material/DoneOutlined";
 import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
-import  { useState, useMemo } from "react";
+import  { useState, useMemo, useEffect, useCallback } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import SimpleReviewFilter from "@/app/admin/_components/ReviewFilter";
+import ReviewFilter from "@/app/home/_components/reviewFilter";
 
-const products = [
-  { id: 1, name: "iPhone 15", rating: 5 },
-  { id: 2, name: "Nike Airmax", rating: 2},
-];
+import axios from "axios";
 
-const columns = [
-  { field: "id", headerName: "ID", width: 90 },
-  {
-    field: "reviews",
-    headerName: "Reviews",
-    width: 250,
-    editable: true,
-    align: "center",
-    headerAlign: "center",
-    flex: 1,
-  },
+import { useSnackbar } from "@/providers/snackbarProvider";
 
-  {
-    field: "users",
-    headerName: "Users",
-    width: 120,
-    editable: true,
-    align: "center",
-    headerAlign: "center",
-  },
 
-  {
-    field: "usefulness",
-    headerName: "Usefulness",
-    width: 150,
-    align: "center",
-    headerAlign: "center",
-    // Calculate usefulness based on product rating
-    renderCell: (params) => {
-      const productId = params.row.productId;
-      const product = products.find((p) => p.id === productId);
-      const rating = product ? product.rating : 1;
+
+
+
+
+
+
+
+const ratingLabels = {
+  0.5: "Useless",
+  1: "Useless+",
+  1.5: "Poor",
+  2: "Poor+",
+  2.5: "Ok",
+  3: "Ok+",
+  3.5: "Good",
+  4: "Good+",
+  4.5: "Excellent",
+  5: "Excellent+",
+};
+
+
+
+
+
+
+
+
+
+
+const Reviews = () => {
+
+
+  
+  const theme = useTheme();
+  const [selectedProductId, setSelectedProductId] = useState("all"); 
+ 
+
+  
+
+
+
+
+  const [isClient, setIsClient] = useState(false); 
+
+  const [reviews, setReviews] = useState([]);
+
+
+
+   const fetchFlaggedReviews = useCallback(async()=>{
+       try {
+
+     const response = await axios.get('/api/admin/flagged-reviews');
+    setReviews(response.data);
+
+  } catch (error) {
+    console.error("Failed to fetch flagged reviews :", error);
+  }
+
+    } , [] ) ;
+
+
+
+useEffect( ()=>{
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  setIsClient(true); 
+
+  
+
+  fetchFlaggedReviews();
+
+},[fetchFlaggedReviews]);
+
+console.log(reviews)
+
+
+
+
+
+
+  // Filter function
+  const filteredData = useMemo(() => {
+    let result = [...reviews]; 
+    
+    // Product filter
+    if (selectedProductId !== "all") {
+      const productId = parseInt(selectedProductId);
+      result = result.filter((row) => row.product?.id === productId);
+    }
+
+   
+    
+
+    return result;
+  }, [reviews,selectedProductId]);
+
+  
+
+
+
+  const handleClearFilters = () => {
+
+    setSelectedProductId("all");
+    setUsefulnessFilter("all");
+    setStatusReviewFilter("all");
+    
+  };
+
+
+
+
+ 
+
+  
+
+
+   const {showSnackbar} = useSnackbar();
+
+   const handleAction = useCallback( async (id, actionType)=>{
+
+    try{
+      console.log("Action ID:", id);
+      if (actionType === 'accept') {
+      await axios.patch('/api/admin/manage-reviews', { id });
+      showSnackbar("Review approved successfully !", "success");
+    } else {
+
+      
+
+
+      await axios.delete('/api/admin/manage-reviews', { data: { id: id } });
+      showSnackbar("Review rejected successfully !", "error");
+    }
+    fetchFlaggedReviews(); // Refresh the list
+
+    } catch(error){
+
+       console.error("Action failed:", error);
+    showSnackbar(error.response?.data?.error || "An error occurred. Please try again.", "error");
+
+    }
+
 
      
-      let usefulness;
-      if (rating >= 4) usefulness = "Extremely Useful";
-      else if (rating >= 3) usefulness = "Very Useful";
-      else if (rating >= 2) usefulness = "Useful";
-      else if (rating >= 1) usefulness = "Somewhat Useful";
-      else usefulness = "Not Useful";
 
-      return (
-        <Box
-          sx={{
-            fontWeight: "bold",
-            color:
-              rating >= 3
-                ? "success.main"
-                : rating >= 2
-                ? "warning.main"
-                : "error.main",
-          }}
-        >
-          {usefulness}
-        </Box>
-      );
+    } , [fetchFlaggedReviews, showSnackbar]); 
+
+
+
+
+
+
+
+
+
+
+
+
+const columns = useMemo(()=>{
+  return [
+  { field: "id", headerName: "ID", width: 70 , align: "center", headerAlign: "center",},
+  
+  // Accessing Product Name from the nested object
+  { 
+    field: "productName", 
+    headerName: "Product", 
+    width: 200,
+    align: "center",
+    headerAlign: "center",
+    valueGetter: (value, row) => row.product?.name || "No Product" 
+  },
+
+  //  Accessing Reviewer Name (Combining first and last name)
+  { 
+    field: "reviewer", 
+    headerName: "Reviewer", 
+    width: 180,
+    align: "center",
+    headerAlign: "center",
+    valueGetter: (value, row) => 
+      row.user ? `${row.user.firstName} ${row.user.lastName}` : "Anonymous"
+  },
+
+  { field: "description", headerName: "Comment", flex: 1, minWidth: 200, align: "center", headerAlign: "center",},
+
+  { 
+    field: "rating", 
+    headerName: "Rating", 
+    width: 100,
+    align: "center",
+    headerAlign: "center",
+    valueGetter: (value, row) => {
+      
+      return ratingLabels[row.rating] || "No Rating";
     },
   },
 
+  {
+    field: "createdAt",
+    headerName: "Date",
+    width: 130,
+    align: "center",
+    headerAlign: "center",
+    valueFormatter: (value) => new Date(value).toLocaleDateString(),
+  },
+
+  
   {
     field: "actions",
     headerName: "Actions",
@@ -90,7 +237,7 @@ const columns = [
     filterable: false,
     disableColumnMenu: true,
     renderCell: (params) => {
-      const { status } = params.row;
+      
       return (
         <Box
           sx={{
@@ -99,7 +246,7 @@ const columns = [
             width: "100%",
           }}
         >
-          {status === "inactive" ? (
+          
             <Box>
               <Tooltip title="Accept review">
                 <Button
@@ -107,6 +254,7 @@ const columns = [
                   startIcon={<DoneOutlinedIcon />}
                   color="success"
                   sx={{ mx: 1 }}
+                  onClick={() => handleAction(params.row.id, 'accept')}
                 >
                   Accept
                 </Button>
@@ -117,122 +265,50 @@ const columns = [
                   startIcon={<CloseOutlinedIcon />}
                   color="error"
                   sx={{ mx: 1 }}
+                  onClick={() => handleAction(params.row.id, 'reject')}
                 >
                   Reject
                 </Button>
               </Tooltip>
             </Box>
-          ) : (
-            <Button
-              variant="outlined"
-              startIcon={<CheckCircleOutlineOutlinedIcon />}
-              color="info"
-              sx={{
-                pointerEvents: "none",
-                cursor: "not-allowed",
-                my: 1,
-              }}
-            >
-              Accepted
-            </Button>
-          )}
+          
         </Box>
       );
     },
   },
+
+
+
+
+
 ];
-const rows = [
-  {
-    id: 1,
-    productId: 1,
-    reviews: "Great phone! Love the camera quality.",
-    users: "sara amal",
-    status: "active",
-  },
-  {
-    id: 2,
-    productId: 2,
-    reviews: "Shoes are uncomfortable after long use.",
-    users: "john doe",
-    status: "inactive",
-  },
-  {
-    id: 3,
-    productId: 1,
-    reviews: "Battery life could be better.",
-    users: "alex smith",
-    status: "active",
-  },
-  {
-    id: 4,
-    productId: 2,
-    reviews: "Perfect for running.",
-    users: "emma wilson",
-    status: "inactive",
-  },
-  {
-    id: 5,
-    productId: 1,
-    reviews: "Best iPhone ever!",
-    users: "mike brown",
-    status: "active",
-  },
-];
+},[handleAction]);
 
-const Reviews = () => {
-  const theme = useTheme();
-  const [selectedProductId, setSelectedProductId] = useState("all"); 
-  const [usefulnessFilter, setUsefulnessFilter] = useState("all");
-  const [statusReviewFilter, setStatusReviewFilter] = useState("all");
 
-  // actual data state
-  const [allData] = useState(rows);
 
-  // Filter function
-  const filteredData = useMemo(() => {
-    let result = [...allData]; // Use spread operator Start with all rows
-    
-    // Product filter
-    if (selectedProductId !== "all") {
-      const productId = parseInt(selectedProductId);
-      result = result.filter((row) => row.productId === productId);
-    }
 
-    // Usefulness filter
-    if (usefulnessFilter !== "all") {
-      result = result.filter((row) => {
-        // Calculate usefulness for each row
-        const product = products.find((p) => p.id === row.productId);
-        const rating = product ? product.rating : 0;
 
-        let usefulness;
-        if (rating >= 4) usefulness = "Extremely Useful";
-        else if (rating >= 3) usefulness = "Very Useful";
-        else if (rating >= 2) usefulness = "Useful";
-        else if (rating >= 1) usefulness = "Somewhat Useful";
-        else usefulness = "Not Useful";
 
-        return usefulness === usefulnessFilter;
-      });
-    }
-    // status filter
-    if (statusReviewFilter !== "all") {
-  result = result.filter((row) => {
-    return row.status === statusReviewFilter.toLowerCase();
-  });
-}
 
-    return result;
-  }, [allData,selectedProductId, usefulnessFilter,statusReviewFilter]);
 
-  
-  const handleClearFilters = () => {
 
-    setSelectedProductId("all");
-    setUsefulnessFilter("all");
-    setStatusReviewFilter("all");
-    
-  };
+
+
+
+
+
+
+
+
+
+
+// Prevent rendering until the component is mounted
+if (!isClient) return null;
+
+
+
+
+
 
 
   return (
@@ -244,14 +320,14 @@ const Reviews = () => {
       }}
     >
      
-      <SimpleReviewFilter
+      <ReviewFilter
         productFilter={selectedProductId}
         onSetProductFilterChange={setSelectedProductId}
-        products={products}
-        usefulnessFilter={usefulnessFilter}
-        onSetUsefulnessFilterChange={setUsefulnessFilter}
-        statusReviewFilter={statusReviewFilter}
-        onStatusFilterChange={setStatusReviewFilter}
+        products={reviews}
+        
+        
+        
+       
       />
 
       <Box
@@ -291,13 +367,13 @@ const Reviews = () => {
           >
             <Typography variant="body1" color="text.secondary">
               
-              {filteredData.length === allData.length
-                ? `All ${allData.length} reviews`
-                : `${filteredData.length} of ${allData.length} reviews`}
+              {filteredData.length === reviews.length
+                ? `All ${reviews.length} reviews`
+                : `${filteredData.length} of ${reviews.length} reviews`}
             </Typography>
 
             
-            {filteredData.length !== allData.length && (
+            {filteredData.length !== reviews.length && (
               <Button
                 variant="outlined"
                 size="small"

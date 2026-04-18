@@ -11,7 +11,7 @@ import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 
-const ProductManagementFooter = ({ stats }) => {
+const ProductManagementFooter = ({ productsType }) => {
   return (
     <div>
       <Box sx={{ flexGrow: 1, my: 2, mx: 3 }}>
@@ -28,7 +28,7 @@ const ProductManagementFooter = ({ stats }) => {
                 fontSize="small"
               />
               <Typography variant="body2">
-                Active products : {stats.active}
+                Verified products : {productsType.verified}
               </Typography>
             </Stack>
 
@@ -45,7 +45,7 @@ const ProductManagementFooter = ({ stats }) => {
             >
               <WarningAmberOutlinedIcon color="warning" fontSize="small" />
               <Typography variant="body2">
-                under review : {stats.inactive}
+                Unverified products : {productsType.unverified}
               </Typography>
             </Stack>
           </Toolbar>

@@ -16,7 +16,11 @@ import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import CheckCircleOutlineOutlinedIcon from "@mui/icons-material/CheckCircleOutlineOutlined";
 import IconButton from "@mui/material/IconButton";
 
-function SimpleProductFilter({
+
+
+
+
+function ProductFilter({
   dateFilter,
   onDateFilterChange,
   categoryFilter,
@@ -25,7 +29,14 @@ function SimpleProductFilter({
   onRatingFilterChange,
   statusFilter,
   onStatusFilterChange,
+  categories
 }) {
+
+  
+
+
+
+
   const handleDateChange = (event) => {
     onDateFilterChange(event.target.value);
   };
@@ -74,6 +85,12 @@ function SimpleProductFilter({
             </Select>
           </FormControl>
         </Grid>
+
+
+
+
+
+
         {/* category Filter */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth size="small">
@@ -84,11 +101,21 @@ function SimpleProductFilter({
               onChange={handleCategoryChange}
             >
               <MenuItem value="all">Any category</MenuItem>
-              <MenuItem value="Electronics">Electronics</MenuItem>
-              <MenuItem value="Clothes">Clothes</MenuItem>
+              
+              {categories.map((category) => {
+  return (
+    <MenuItem key={category.id} value={category.name}>
+      {category.name}
+    </MenuItem>
+  );
+})}
+
+              
             </Select>
           </FormControl>
         </Grid>
+
+
 
        
 
@@ -134,24 +161,27 @@ function SimpleProductFilter({
               onChange={handleStatusChange}
             >
               <MenuItem value="all">All Status</MenuItem>
-              <MenuItem value="active" sx={{ gap: 0.5 }}>
+              <MenuItem value="true" sx={{ gap: 0.5 }}>
                 <IconButton color="success" size="small">
                   <CheckCircleOutlineOutlinedIcon />
                 </IconButton>
-                Active
+                Verified products
               </MenuItem>
-              <MenuItem value="inactive" sx={{ gap: 0.5 }}>
+              <MenuItem value="false" sx={{ gap: 0.5 }}>
                 <IconButton color="warning" size="small">
                   <WarningAmberOutlinedIcon />
                 </IconButton>
-                Inactive
+                Unverified products
               </MenuItem>
             </Select>
           </FormControl>
         </Grid>
+
+
+        
       </Grid>
     </Paper>
   );
 }
 
-export default SimpleProductFilter;
+export default ProductFilter;

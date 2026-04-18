@@ -6,34 +6,39 @@
 import { Chip, Modal, Avatar, Divider, Paper } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import VerifiedIcon from "@mui/icons-material/Verified";
-import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
-import Badge from "@mui/material/Badge";
 
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Button from "@mui/material/Button";
-
-import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
 import Rating from "@mui/material/Rating";
 
-import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 import ReviewAccordion from "./ReviewAccordion";
 
+import { formatDistanceToNow } from 'date-fns';
+
+
+
+
+
 const ReviewModal = ({
   openReviews,
   handleCloseReviews,
-  selectedProduct,
-  isRegisteredUser,
+  selectedProduct ,
+    status,
+  averageRating
 }) => {
+
+  
+
+
+
+
+
+
   return (
     <Modal
       open={openReviews}
@@ -80,21 +85,25 @@ const ReviewModal = ({
                 }}
               >
                 <Rating
-                  value={selectedProduct.averageRating}
+                  value={averageRating(selectedProduct)}
                   readOnly
                   precision={0.5}
                 />
                 <Typography variant="body1">
-                  <strong>{selectedProduct.averageRating.toFixed(1)}</strong>{" "}
+                  
+                  <strong>{averageRating(selectedProduct).toFixed(1)}</strong>{" "} 
+                  
+                  
+                  
                   out of 5
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  ({selectedProduct.totalReviews} reviews)
+                  ({selectedProduct.reviews?.length || 0} reviews)
                 </Typography>
               </Box>
             </Box>
 
-            {selectedProduct.ownerReview && (
+            {selectedProduct.creator && (
               <Paper
                 sx={{
                   p: 2,
@@ -138,37 +147,32 @@ const ReviewModal = ({
                       height: 32,
                     }}
                   >
-                    {selectedProduct.ownerReview.userName.charAt(0)}
+                    {selectedProduct.creator.firstName.charAt(0)}
                   </Avatar>
                   <Box>
                     <Typography fontWeight="bold">
-                      {selectedProduct.ownerReview.userName}
+                      {selectedProduct.creator.firstName } { selectedProduct.creator.lastName}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {selectedProduct.ownerReview.date}
+                      {  formatDistanceToNow(new Date(selectedProduct.createdAt), { addSuffix: true })      }
                     </Typography>
                   </Box>
                 </Box>
 
                 <Rating
-                  value={selectedProduct.ownerReview.rating}
+                  value={selectedProduct.rate}
                   readOnly
                   size="small"
                   sx={{ mb: 1 }}
                 />
 
                 <Typography variant="body1" sx={{ mb: 2 }}>
-                  &quot;{selectedProduct.ownerReview.text}&quot;
+                  &quot;{selectedProduct.description}&quot;
                 </Typography>
 
                 <Box sx={{ display: "flex", gap: 1 }}>
-                  <Chip
-                    label="12 helpful" 
-                    size="small"
-                    icon={<ThumbUpOutlinedIcon color="info" />}
-                    color="info"
-                  />
-                  {selectedProduct.ownerReview.verifiedPurchase && (
+                  
+                  {selectedProduct.isVerified && (
                     <Chip
                       label="Verified Purchase"
                       size="small"
@@ -180,19 +184,25 @@ const ReviewModal = ({
               </Paper>
             )}
 
-            {isRegisteredUser && (
+            { status ==="authenticated" && (
 
               <>
-                <ReviewAccordion />
+                <ReviewAccordion 
+                productId = {selectedProduct.id}
+                
+                
+                
+                />
               </>
             )}
 
             {/* Community Reviews */}
             <Typography variant="h6" gutterBottom sx={{ mt: 3, mb: 2 }}>
-              Community Reviews ({selectedProduct.reviews.length})
+             
+              Community Reviews   
             </Typography>
 
-            {selectedProduct.reviews.map((review, index) => (
+            {selectedProduct.reviews?.map((review, index) => (
               <Box key={review.id} sx={{ mb: 3 }}>
                 <Box
                   sx={{
@@ -209,19 +219,19 @@ const ReviewModal = ({
                       height: 32,
                     }}
                   >
-                    {review.userName.charAt(0)}
+                    {review.user.firstName.charAt(0)}
                   </Avatar>
                   <Box sx={{ flexGrow: 1 }}>
-                    <Typography fontWeight="bold">{review.userName}</Typography>
+                    <Typography fontWeight="bold">{review.user.firstName}  {review.user.firstName} </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      {review.date}
+                      {  formatDistanceToNow(new Date(review.createdAt), { addSuffix: true })  }
                     </Typography>
                   </Box>
                   <Rating value={review.rating} readOnly size="small" />
                 </Box>
 
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  {review.text}
+                  {review.description}
                 </Typography>
 
                 {index < selectedProduct.reviews.length - 1 && (

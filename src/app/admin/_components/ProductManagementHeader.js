@@ -72,9 +72,9 @@ const ProductManagementHeader = ({ searchTerm, onSearchChange }) => {
             <Divider
               orientation="vertical"
               flexItem
-              sx={{ borderRightWidth: 3, borderColor: "primary.default" }}
+              sx={{ borderRightWidth: 3, borderColor: "primary.default" , mr:25}}
             />
-            <Search sx={{ flexGrow: 1, m: 2 }}>
+            <Search sx={{ flexGrow: 1/2, m: 2 }}>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
@@ -85,19 +85,9 @@ const ProductManagementHeader = ({ searchTerm, onSearchChange }) => {
                 sx={{ border: "solid 1px #649AD9" }}
               />
             </Search>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderRightWidth: 3, borderColor: "primary.default" }}
-            />
+            
 
-            <Button
-              variant="outlined"
-              startIcon={<AddShoppingCartIcon />}
-              sx={{ flexGrow: 1 / 5, m: 2 }}
-            >
-              Add product
-            </Button>
+           
           </Toolbar>
         </AppBar>
       </Box>

@@ -11,8 +11,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import React, { useState, useEffect } from 'react'; 
 
-import { useTheme } from '@mui/material/styles';
 
+import {Stack,Typography} from "@mui/material";
+
+import axios from 'axios';
 
 
 
@@ -26,34 +28,38 @@ const Bar = dynamic(
 
 
 
-const testData = [
-  { date: "Jan 20", products: 45, reviews: 120, users: 80 },
-  { date: "Jan 21", products: 52, reviews: 150, users: 95 },
-  { date: "Jan 22", products: 38, reviews: 110, users: 70 },
-  { date: "Jan 23", products: 65, reviews: 190, users: 110 },
-  { date: "Jan 24", products: 48, reviews: 130, users: 85 },
-  { date: "Jan 25", products: 70, reviews: 210, users: 130 },
-  { date: "Jan 26", products: 55, reviews: 160, users: 100 },
-];
-
 
 
 
 
 const ContentGrowthChart = () => {
 
-    const theme = useTheme();
 
-
+   const [chartData, setChartData] = useState([]); 
+  const [loading, setLoading] = useState(true);
    const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsClient(true);
+
+    const fetchData = async () => {
+      try {
+        const res = await axios.get('/api/admin/barChart-stats');
+        setChartData(res.data);
+      } catch (err) {
+        console.error("Chart data fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+
   }, []);
+
+  console.log(chartData);
     
   
-  const chartData = testData;
 
   const BarchartTheme = {
     
@@ -170,7 +176,22 @@ const ContentGrowthChart = () => {
 
 
 
-  if (!isClient) return null;
+  if (!isClient || loading ) return (
+     <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh" 
+      sx={{ backgroundColor: 'background.default' }} 
+    >
+      <Stack spacing={2} alignItems="center">
+        <CircularProgress size={50} thickness={4} color="primary" />
+        <Typography variant="body1" color="text.secondary" fontWeight="medium">
+          Loading session...
+        </Typography>
+      </Stack>
+    </Box>
+  );
 
 
 
@@ -195,10 +216,12 @@ const ContentGrowthChart = () => {
         axisBottom={{
           tickSize: 5,
           tickPadding: 5,
-          tickRotation: -45, // Rotate dates for readability
+          tickRotation: -45, 
           legend: 'Last 30 Days',
           legendPosition: 'middle',
           legendOffset: 50,
+           
+
         }}
         axisLeft={{
           tickSize: 5,

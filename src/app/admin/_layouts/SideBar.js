@@ -33,6 +33,18 @@ import { blueGrey, grey } from "@mui/material/colors";
 import BarChartOutlinedIcon from '@mui/icons-material/BarChartOutlined';
 import PieChartOutlineOutlinedIcon from '@mui/icons-material/PieChartOutlineOutlined';
 
+// handle logout 
+import { signOut } from "next-auth/react";
+
+import { useSession } from "next-auth/react";
+
+
+
+
+
+
+
+
 const drawerWidth = 240;
 
 const DrawerHeader = styled("div")(({ theme }) => ({
@@ -118,6 +130,12 @@ const settingsItems = [
 
 
 const SideBar = ({ open, handleDrawerClose }) => {
+
+    const { data: session, status } = useSession();
+
+
+
+
   const theme = useTheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const handleSettingsClick = () => {
@@ -126,6 +144,34 @@ const SideBar = ({ open, handleDrawerClose }) => {
    const router = useRouter();
  const pathname = usePathname();
   const { mode } = useColorScheme(); 
+
+
+   const handleLogout = async () => {
+      
+      await signOut({ 
+        callbackUrl: "/home", 
+        redirect: true 
+      });
+  
+    
+      showSnackbar("You have been logged out", "info");
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   return (
     <Drawer variant="permanent" open={open}>
@@ -149,13 +195,13 @@ const SideBar = ({ open, handleDrawerClose }) => {
           border: "2px solid grey",
           transition: "0,25s",
         }}
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhqEebyj_V0ZeKcWFZnzmfn0dOIOaKYTGxNA&s"
+        src= {`${session?.user.img}  `}
       />
       <Typography
         align="center"
         sx={{ fontSize: open ? 17 : 0, transition: "0,25s" }}
       >
-        Sara sara
+         {`${session?.user.firstName}  ${session?.user.lastName}`}
       </Typography>
       <Typography
         align="center"
@@ -288,13 +334,14 @@ const SideBar = ({ open, handleDrawerClose }) => {
           </ListItemButton>
         </ListItem>
 
-        {/* Show sub-menu only if BOTH sidebar(Drawer) is open AND settings is expanded */}
+        {/* Show sub-menu only if both sidebar(Drawer) is open AND settings is expanded */}
         <Collapse in={settingsOpen && open} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
             {settingsItems.map((item) => (
               <ListItemButton
                 onClick={() => {
                   router.push(item.path);
+                  item.text === "Logout" && handleLogout()
                 }}
                 key={item.path}
                 sx={{
@@ -322,6 +369,7 @@ const SideBar = ({ open, handleDrawerClose }) => {
                       "& .MuiListItemText-primary": {
                         fontSize: "0.9rem", 
                       },
+                      
                     }}
                   />
                 )}

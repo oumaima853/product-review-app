@@ -4,16 +4,12 @@
 A community-driven platform where users share and rate product experiences to help consumers make informed purchasing decisions.
 
 
-#  Current Status
-
-Actively developing - This is a learning project where I'm applying React and Next.js concepts.
-
 
 # Tech Stack
 - Frontend: React.js, Next.js 16
 - Styling: Material UI
 - State Management: React Hooks (useState, useEffect)
-- API Integration: REST API (in progress)
+- API Integration: REST API 
 
 
 # Features Implemented
@@ -21,8 +17,8 @@ Actively developing - This is a learning project where I'm applying React and Ne
 -  Component architecture (Header, Footer, UI components)
 -  Review card component with rating display
 -  Basic routing structure
--  Review submission form (in progress)
--  API integration (planned)
+-  Review submission form 
+-  API integration
 
 
 # What I'm Learning
@@ -36,6 +32,4 @@ This project demonstrates my commitment to learning modern web development. Whil
 
 
 
-# Live Demo
-[Link if you deploy it]
 
