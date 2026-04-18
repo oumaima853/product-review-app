@@ -22,6 +22,7 @@ import axios from "axios";
 
 
 
+export const dynamic = 'force-dynamic';
 
 
 
