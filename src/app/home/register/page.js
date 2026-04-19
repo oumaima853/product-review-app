@@ -85,7 +85,7 @@ const onSubmit = async (data) => {
 
 
 
-    return(<Box sx={{ border: 1, borderColor: "rgba(215, 187, 30, 1)",m :3 }}>
+    return(<Box sx={{m :3 }}>
 
         <HomePageHeaederPart1/>
         
