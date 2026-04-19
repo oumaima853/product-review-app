@@ -135,7 +135,42 @@ const onSubmit = async (data) => {
             <Typography variant="body2" color="text.secondary">
               Sign in to your account
             </Typography>
+
+
           </Box>
+
+           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+
+            <Typography component="h1" variant="h5">
+              Demo Credentials :
+            </Typography>
+          <Typography variant="body2" color="text.secondary">
+              Sign in to your account
+            </Typography>
+            <Typography variant="body1" color="text.primary">
+              <strong>Admin:</strong>
+              admin@test.com / password123
+            </Typography>
+
+            <Typography variant="body1" color="text.primary">
+              <strong>User:</strong>
+             Petra@test.com / password123
+            </Typography>
+          
+  
+
+          </Box>
+
+
+         
+
+          
+
+
+
+
+
+
 
           <form onSubmit={handleSubmit(onSubmit)}>
             <Controller
